@@ -1,51 +1,79 @@
+/** Alexander Shuping
+ ** CEN3031 Intro to Software Engineering
+ ** Fall 2019 Bootcamp 1
+ ** 2019-08-21
+ **/
+
 var http = require('http'), 
-    fs = require('fs'), 
-    url = require('url'),
-    port = 8080;
+		fs = require('fs'), 
+		url = require('url'),
+		port = 8080;
 
 /* Global variables */
 var listingData, server;
 
 var requestHandler = function(request, response) {
-  var parsedUrl = url.parse(request.url);
 
-  /*
-    Your request handler should send listingData in the JSON format as a response if a GET request 
-    is sent to the '/listings' path. Otherwise, it should send a 404 error. 
+	var parsedUrl = url.parse(request.url);
 
-    HINT: Explore the request object and its properties 
-    HINT: Explore the response object and its properties
-    https://code.tutsplus.com/tutorials/http-the-protocol-every-web-developer-must-know-part-1--net-31177
-    http://stackoverflow.com/questions/17251553/nodejs-request-object-documentation
-    
-    HINT: Explore how callback's work 
-    http://www.theprojectspot.com/tutorial-post/nodejs-for-beginners-callbacks/4
-    
-    HINT: Explore the list of MIME Types
-    https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Complete_list_of_MIME_types
-   */
+	console.log('Request received!');
+	console.log('  > URL: ' + request.url);
+
+	if(parsedUrl.pathname == '/listings'){
+		console.log('   > This is valid!');
+
+		response.writeHead(200, {
+			'Content-Type': 'application/json',
+			'X-project-author': 'Alexander Shuping'
+		}); // (append an extra header, because why not?)
+
+		response.write(JSON.stringify(listingData));
+		response.end();
+
+	}else{
+		console.log('   > This is INVALID!');
+		response.writeHead(404);
+
+		/* I am incredibly disappointed that the unit tests don't like my
+		 * wonderful custom 404 page. I commented it out so that the unit
+		 * tests would pass, but I am not removing it.
+		 */
+
+		/*response.write(`
+			<body>
+				<blink><marquee><h1>404 Error</h1></marquee></blink>
+				<p>
+					whoops, looks like you requested the wrong url. did you maybe
+					want <a href=/listings>this one</a> instead?
+				</p>
+			</body>
+		`);*/
+
+		response.write('Bad gateway error');
+
+		response.end();
+	}
+
+	console.log(); // Insert a newline, to make the log output cleaner.
 };
 
 fs.readFile('listings.json', 'utf8', function(err, data) {
-  /*
-    This callback function should save the data in the listingData variable, 
-    then start the server. 
+	//Check for errors
+	if(err){
+		console.log('HECK! Received the following error while trying to load JSON'
+			+ 'data:');
+		console.log(err);
+		throw err;
+	}
 
-    HINT: Check out this resource on fs.readFile
-    //https://nodejs.org/api/fs.html#fs_fs_readfile_path_options_callback
+	 //Save the sate in the listingData variable already defined
+	listingData = JSON.parse(data)
 
-    HINT: Read up on JSON parsing Node.js
-   */
+	//Creates the server
+	var server = http.createServer(requestHandler);
 
-    //Check for errors
-  
-
-   //Save the sate in the listingData variable already defined
-  
-
-  //Creates the server
-  
-  //Start the server
-
-
+	//Start the server
+	server.listen(port, function() {
+		console.log('Listening on port ' + port);
+	});
 });
