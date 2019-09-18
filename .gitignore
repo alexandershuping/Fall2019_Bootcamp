@@ -1,0 +1,9 @@
+# ignore vim swapfiles
+*.swp
+
+# ignore private config file
+config.js
+
+# and node modules
+node_modules
+package-lock.json

@@ -1,27 +1,45 @@
-/* Import mongoose and define any variables needed to create the schema */
+/** Schema to hold location information
+  * 
+	* Each location has a full name (e.g. "New Engineering Building"), as well as
+	* a short-form code (e.g. "NEB"), which is usually either three or four
+	* letters but which is NOT GUARANTEED to be this long.
+	* 
+	* Additionally, each location has a set of geographic coordinates and a
+	* street address.
+	*/
+
 var mongoose = require('mongoose'), 
     Schema = mongoose.Schema;
 
-/* Create your schema for the data in the listings.json file that will define how data is saved in your database
-     See https://mongoosejs.com/docs/guide.html for examples for creating schemas
-     See also https://scotch.io/tutorials/using-mongoosejs-in-node-js-and-mongodb-applications
-  */
 var listingSchema = new Schema({
-  /* Your code for a schema here */ 
-  //Check out - https://mongoosejs.com/docs/guide.html
-
+	name: {               // Full name of location
+		type: String,
+		required: true
+	},
+	code: {               // Short code, if applicable
+		type: String,
+		required: true
+	},
+	coordinates: {        // Geographic coordinates
+		latitude: Number,
+		longitude: Number
+	},
+	address: String,      // Street address, if applicable
+	created_at: Date,     // Date this entry was added to the database
+	updated_at: Date      // Date this entry was last modified
 });
 
-/* Create a 'pre' function that adds the updated_at (and created_at if not already there) property 
-   See https://scotch.io/tutorials/using-mongoosejs-in-node-js-and-mongodb-applications
-*/
+// pre-method to ensure that created-at and updated-at dates are accurate.
 listingSchema.pre('save', function(next) {
-  /* your code here */
+  var now = new Date()
+	this.updated_at = now
+	if(!this.created_at){
+		this.created_at = now
+	}
+
+	next()
 });
 
-/* Use your schema to instantiate a Mongoose model */
-//Check out - https://mongoosejs.com/docs/guide.html#models
+// A single, global model object is made available throughout the application.
 var Listing = mongoose.model('Listing', listingSchema);
-
-/* Export the model to make it avaiable to other parts of your Node application */
 module.exports = Listing;
